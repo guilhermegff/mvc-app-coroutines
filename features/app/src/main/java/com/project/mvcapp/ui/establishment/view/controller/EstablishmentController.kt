@@ -6,7 +6,9 @@ import com.project.mvcapp.core.BaseScreenNavigator
 import com.project.mvcapp.ui.establishment.component.reviews.ReviewViewItem
 import com.project.mvcapp.ui.establishment.ext.toEstablishmentViewItem
 import com.project.mvcapp.ui.establishment.usecase.BaseEstablishmentUseCase
-import timber.log.Timber
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class EstablishmentController(
     private val establishmentUseCase: BaseEstablishmentUseCase,
@@ -14,6 +16,8 @@ class EstablishmentController(
     private val id: String,
     private val screenNavigator: BaseScreenNavigator
 ) : BaseController<EstablishmentViewContract>(), EstablishmentViewContract.Listener {
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     val reviews by lazy { createReviewItems() }
 
@@ -41,32 +45,39 @@ class EstablishmentController(
     }
 
     private fun loadEstablishment(id: String) {
-        establishmentUseCase.loadEstablishment(id)
-            .subscribeOn(schedulerProvider.io())
-            .observeOn(schedulerProvider.ui())
-            .doOnSubscribe { viewContract.showLoading() }
-            .doFinally { viewContract.hideLoading() }
-            .subscribe({
-                when {
-                    it.isSuccess -> {
-                        it.getOrNull()?.let { establishment ->
-                            establishment.toEstablishmentViewItem().let { establishmentViewItem ->
-                                viewContract.showEstablishment(establishmentViewItem)
-                                viewContract.showContacts(establishmentViewItem)
-                                viewContract.showSchedule(establishmentViewItem)
+        coroutineScope.launch {
+            viewContract.showLoading()
+            try {
+                establishmentUseCase.loadEstablishment(id).let {
+                    viewContract.hideLoading()
+                    when(it.isSuccessful) {
+                        true -> {
+                            it.body()?.let { establishment ->
+                                establishment.toEstablishmentViewItem()
+                                    .let { establishmentViewItem ->
+                                        viewContract.showEstablishment(establishmentViewItem)
+                                        viewContract.showContacts(establishmentViewItem)
+                                        viewContract.showSchedule(establishmentViewItem)
+                                    }
+                                reviews.shuffle()
+                                reviews.filterIndexed { index, _ -> index < 3 }
+                                    .let { threeReviews ->
+                                        viewContract.showReviews(threeReviews as ArrayList<ReviewViewItem>)
+                                    }
+                                viewContract.showReviewsCount(reviews.size)
+                                viewContract.showPictures()
                             }
-                            reviews.shuffle()
-                            reviews.filterIndexed { index, _ -> index < 3 }.let { threeReviews ->
-                                viewContract.showReviews(threeReviews as ArrayList<ReviewViewItem>)
-                            }
-                            viewContract.showReviewsCount(reviews.size)
-                            viewContract.showPictures()
+                        }
+                        false -> {
+                            viewContract.showError()
                         }
                     }
-                    it.isFailure -> { viewContract.showError() }
                 }
-            }, { Timber.e(it, "loadEstablishment: %s", it.message) })
-            .run { disposables.add(this) }
+            } catch (e: Exception) {
+                viewContract.hideLoading()
+                viewContract.showError()
+            }
+        }
     }
 
     override fun onMoreReviewsClick() {

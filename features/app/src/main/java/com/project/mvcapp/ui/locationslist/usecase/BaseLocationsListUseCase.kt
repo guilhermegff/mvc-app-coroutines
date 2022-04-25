@@ -2,8 +2,8 @@ package com.project.mvcapp.ui.locationslist.usecase
 
 import com.project.mvcapp.core.BaseUseCase
 import com.project.service.model.Locations
-import io.reactivex.Single
+import retrofit2.Response
 
 interface BaseLocationsListUseCase : BaseUseCase {
-    fun loadLocations() : Single<Result<Locations>>
+    suspend fun loadLocations() : Response<Locations>
 }

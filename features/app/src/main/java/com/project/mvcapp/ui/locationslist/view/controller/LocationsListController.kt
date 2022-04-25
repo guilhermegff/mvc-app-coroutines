@@ -8,12 +8,16 @@ import com.project.mvcapp.ui.locationslist.component.LocationsAdapterListener
 import com.project.mvcapp.ui.locationslist.ext.toLocationViewItem
 import com.project.mvcapp.ui.locationslist.usecase.BaseLocationsListUseCase
 import com.project.service.model.Locations
-import timber.log.Timber
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class LocationsListController(private val locationsListUseCase: BaseLocationsListUseCase,
                               private val schedulerProvider: BaseSchedulerProvider,
                               private val screenNavigator: BaseScreenNavigator
 ) : BaseController<LocationsListViewContract>(), LocationsListViewContract.Listener, LocationsAdapterListener {
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     override fun observeLive() {
         loadLocations()
@@ -38,23 +42,28 @@ class LocationsListController(private val locationsListUseCase: BaseLocationsLis
     }
 
     private fun loadLocations() {
-        locationsListUseCase.loadLocations()
-            .subscribeOn(schedulerProvider.io())
-            .observeOn(schedulerProvider.ui())
-            .doOnSubscribe { viewContract.showLoading() }
-            .doFinally { viewContract.hideLoading() }
-            .subscribe({
-                when {
-                    it.isSuccess -> {
-                        val locations = it.getOrNull() ?: Locations(arrayListOf())
-                        locations.collection
-                            .map { location -> location.toLocationViewItem() }
-                            .let { newCollection -> viewContract.showLocations(newCollection as ArrayList<LocationViewItem>) }
+        coroutineScope.launch {
+            viewContract.showLoading()
+            try {
+                locationsListUseCase.loadLocations().let {
+                    viewContract.hideLoading()
+                    when (it.isSuccessful) {
+                        true -> {
+                            val locations = it.body() ?: Locations(arrayListOf())
+                            locations.collection
+                                .map { location -> location.toLocationViewItem() }
+                                .let { newCollection -> viewContract.showLocations(newCollection as ArrayList<LocationViewItem>) }
+                        }
+                        false -> {
+                            viewContract.showError()
+                        }
                     }
-                    it.isFailure -> { viewContract.showError() }
                 }
-            }, { Timber.e(it, "loadLocations: %s", it.message) })
-            .run { disposables.add(this) }
+            } catch (e: Exception) {
+                viewContract.hideLoading()
+                viewContract.showError()
+            }
+        }
     }
 
     override fun onErrorViewClick() {

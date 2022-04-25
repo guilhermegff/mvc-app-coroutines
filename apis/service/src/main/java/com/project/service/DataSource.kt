@@ -2,9 +2,9 @@ package com.project.service
 
 import com.project.service.model.Establishment
 import com.project.service.model.Locations
-import io.reactivex.Single
+import retrofit2.Response
 
 interface DataSource {
-    fun locations() : Single<Locations>
-    fun establishment(id: String): Single<Establishment>
+    suspend fun locations() : Response<Locations>
+    suspend fun establishment(id: String): Response<Establishment>
 }

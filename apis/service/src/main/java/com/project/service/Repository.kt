@@ -30,6 +30,6 @@ class Repository(private val dataSource: DataSource) : DataSource {
         }
     }
 
-    override fun locations() = dataSource.locations()
-    override fun establishment(id: String) = dataSource.establishment(id)
+    override suspend fun locations() = dataSource.locations()
+    override suspend fun establishment(id: String) = dataSource.establishment(id)
 }

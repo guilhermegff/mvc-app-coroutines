@@ -2,8 +2,8 @@ package com.project.mvcapp.ui.establishment.usecase
 
 import com.project.mvcapp.core.BaseUseCase
 import com.project.service.model.Establishment
-import io.reactivex.Single
+import retrofit2.Response
 
 interface BaseEstablishmentUseCase : BaseUseCase {
-    fun loadEstablishment(id: String) : Single<Result<Establishment>>
+    suspend fun loadEstablishment(id: String) : Response<Establishment>
 }
