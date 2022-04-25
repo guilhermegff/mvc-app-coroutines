@@ -1,11 +1,9 @@
 package com.project.mvcapp.core
 
 import androidx.annotation.CallSuper
-import io.reactivex.disposables.Disposable
 
 abstract class BaseController<VIEW_CONTRACT : RootViewContract> {
     protected lateinit var viewContract : VIEW_CONTRACT
-    protected var disposables = HashSet<Disposable>()
 
     abstract fun onStart()
     abstract fun onStop()
@@ -17,11 +15,5 @@ abstract class BaseController<VIEW_CONTRACT : RootViewContract> {
     open fun registerListener(viewContract: VIEW_CONTRACT){
         this.viewContract = viewContract
         observeLive()
-    }
-
-    protected fun clearDisposables() {
-        disposables.forEach {
-            it.dispose()
-        }
     }
 }

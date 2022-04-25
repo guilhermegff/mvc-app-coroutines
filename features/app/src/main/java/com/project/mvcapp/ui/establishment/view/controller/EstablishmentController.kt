@@ -36,7 +36,6 @@ class EstablishmentController(
 
     override fun onStop() {
         viewContract.unregisterListener(this)
-        clearDisposables()
     }
 
     override fun initViews() {
