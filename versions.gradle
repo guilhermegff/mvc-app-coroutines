@@ -1,0 +1,17 @@
+ext {
+    glideVersion = "4.12.0"
+    junitVersion = "4.13.2"
+    timberVersion = "4.7.1"
+    materialVersion = "1.5.0"
+    okhttp3Version = "3.14.9"
+    retrofitVersion = "2.9.0"
+    coroutinesVersion = "1.6.1"
+    mockitoKotlinVersion = "2.2.0"
+    androidxTestEspressoVersion = "3.4.0"
+    mockitoAndroidVersion = "2.19.0"
+    androidxCoreKtxVersion = "1.7.0"
+    androidxTestJunitVersion = "1.1.3"
+    androidxAppCompatVersion = "1.4.1"
+    androidxCoreTestingVersion = "2.1.0"
+    androidxConstraintLayoutVersion = "2.1.3"
+}

@@ -32,8 +32,10 @@ android {
 }
 
 dependencies {
-
-    implementation fileTree(dir: "libs", include: ["*.jar"])
+    implementation glide
+    implementation timber
+    implementation material
+    implementation coroutines
 
     implementation project(path: ':apis:service')
 
@@ -44,11 +46,6 @@ dependencies {
     implementation androidxDependencies.app_compat
     implementation androidxDependencies.constraint_layout
 
-    implementation glide
-    implementation timber
-    implementation material
-    implementation coroutines
-
     testImplementation junit
     testImplementation mockitoKotlin
     testImplementation androidxDependencies.core_testing
@@ -56,4 +53,6 @@ dependencies {
     androidTestImplementation mockitoAndroid
     androidTestImplementation androidxDependencies.junit
     androidTestImplementation androidxDependencies.espresso
+
+    implementation fileTree(dir: "libs", include: ["*.jar"])
 }
